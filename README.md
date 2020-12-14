@@ -4,15 +4,24 @@
 JavaScript module used to interact with TEConnect.  
 
 # Getting Started
+Via [npmjs](https://www.npmjs.com/package/@magensa/te-connect-js):  
+
 ```
 npm install @magensa/te-connect @magensa/te-connect-js
 ```
 or
 ```
 yarn add @magensa/te-connnect @magensa/te-connect-js
+```  
+  
+or via CDN:
+```html
+    <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.0/te-connect-js.js"></script>
 ```
 
-If you would prefer to let the code speak, below we have an [example implementation](#-Example-Implementation)
+If you would prefer to let the code speak, below we have two [example implementations](#-Example-Implementation). 
+One is using npmjs - while [the other](#-Example-Implementation-CDN) uses our CDN
 
 1. The first step is to create a TEConnect instance (from ```te-connect```), and feed that instance to the ```TeConnectJs``` (from ```te-connect-js```) constructor.
 
@@ -322,4 +331,98 @@ function demoInit() {
 }
 
 demoInit();
+```
+  
+# Example Implementation CDN
+### An important note about CDN versioning: 
+All ```te-connect-js``` versions will be available via CDN. You can see the version in the path below.  
+If you are starting a new project - it is recommended to start with the most recent version. Therefore, even if you are not using npmjs, it is still recommended to view the most recent published version at [npmjs](https://www.npmjs.com/package/@magensa/te-connect-js), so that you may target the most recent version. CDN and npm packages are versioned simultaneously.  
+Alternatively - if your project requires a specific version - you may target that version in the CDN path.  
+
+```index.html```
+```html
+<body>
+    <h1>TEConnectJS Example</h1>
+
+    <div id="example-div"></div>
+    <button type="button" id="pay-button">Create Payment</button>
+    <button type="button" id="change-styles">Change Styles</button>
+
+    <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.0/te-connect-js.js"></script>
+
+    <script>
+        function demoInit() {
+            var teInstance = window["te-connect"].createTEConnect("__your_public_key_here__");
+            var teConnect = new window["te-connect-js"].TeConnectJs(teInstance);
+
+            var exampleStyles = {
+                base: {
+                    wrapper: { 
+                        margin: 0, 
+                        padding: 0
+                    },
+                    variants: {
+                        inputType: 'outlined',
+                        inputMargin: 'dense'
+                    },
+                    backgroundColor: 'rgb(66, 66, 66)'
+                },
+                boxes: {
+                    labelColor: "#BB86FC",
+                    textColor: "#BB86FC",
+                    borderRadius: 10,
+                    errorColor: "#CF6679",
+                    inputColor: '#121212'
+                }
+            };
+
+            teConnect.mountCardEntry('example-div', exampleStyles);
+
+            function createPaymentClick() {
+                return teConnect.createPayment()
+                    .then(resp => {
+                        console.log(resp);
+
+                        if (resp.error) {
+                            //Not successful - see error
+                        }
+                        else {
+                            //Successful - see response
+                        }
+                    })
+                    .catch(err => console.error("[Catch]:", err));
+            }
+
+            function changeStyles() {
+                var colorful = {
+                    base: {
+                        wrapper: { 
+                            margin: 0, 
+                            padding: 0
+                        },
+                        variants: {
+                            inputType: 'filled',
+                            inputMargin: 'dense'
+                        },
+                    backgroundColor: '#f44336'
+                    },
+                    boxes: {
+                        textColor: "#90ee02",
+                        borderRadius: 2,
+                        errorColor: "#2196f3",
+                        inputColor: '#ff7961'
+                    }
+                };
+
+                teConnect.setStyles(colorful);
+            }
+
+            document.getElementById('pay-button').addEventListener('click', createPaymentClick);
+            document.getElementById('change-styles').addEventListener('click', changeStyles);
+        }
+
+        demoInit();
+    </script>
+</body>
 ```
