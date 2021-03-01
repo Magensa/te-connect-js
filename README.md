@@ -17,7 +17,7 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
 or via CDN:
 ```html
     <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.1/te-connect-js.js"></script>
 ```
 
 If you would prefer to let the code speak, below we have two [example implementations](#-Example-Implementation). 
@@ -106,7 +106,8 @@ demoInit();
 
 4. There are two ways to inject your own styles into the Card Entry fields. One method is static (define styles when mounting), while the other is dynamic (utilize the ```setStyles``` method). The [example implementation](#-Example-Implementation) uses both of these methods to demonstrate various ways you can control your custom styles. See the [complete styles API](#-Styles-API) for more details.  
 
-5. Optionally, you may hide the ZIP input box, if you wish to collect - and provide - a ```billingZip``` without the assistance of ```TEConnect```. Be aware that a ```billingZip``` must be supplied in the ```createPayment``` call - if you choose to hide the ZIP input.  
+5. Optionally, you may hide the ZIP input box, as demonstrated below. Once the input is hidden, the ```billingZip``` parameter becomes optional. If you still wish to provide a ```billingZip``` without rendering the input - you may do so, as demonstrated below (this would hide the ZIP input field, but would still create a payment token with the ```billingZip``` provided in the call).   
+However, if you wish to omit the ```billingZip``` completely, you may do so by hiding the zip input and passing no parameters to the ```createPayment``` function.
 
 ```index.html```
 ```html
@@ -349,7 +350,7 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="change-styles">Change Styles</button>
 
     <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.1/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
