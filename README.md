@@ -20,8 +20,8 @@ or via CDN:
     <script src="https://cdn.magensa.net/te-connect-js/1.0.1/te-connect-js.js"></script>
 ```
 
-If you would prefer to let the code speak, below we have two [example implementations](#-Example-Implementation). 
-One is using npmjs - while [the other](#-Example-Implementation-CDN) uses our CDN
+If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
+One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN
 
 1. The first step is to create a TEConnect instance (from ```te-connect```), and feed that instance to the ```TeConnectJs``` (from ```te-connect-js```) constructor.
 
@@ -104,7 +104,7 @@ function demoInit() {
 demoInit();
 ```  
 
-4. There are two ways to inject your own styles into the Card Entry fields. One method is static (define styles when mounting), while the other is dynamic (utilize the ```setStyles``` method). The [example implementation](#-Example-Implementation) uses both of these methods to demonstrate various ways you can control your custom styles. See the [complete styles API](#-Styles-API) for more details.  
+4. There are two ways to inject your own styles into the Card Entry fields. One method is static (define styles when mounting), while the other is dynamic (utilize the ```setStyles``` method). The [example implementation](#Example-Implementation) uses both of these methods to demonstrate various ways you can control your custom styles. See the [complete styles API](#Styles-API) for more details.  
 
 5. Optionally, you may hide the ZIP input box, as demonstrated below. Once the input is hidden, the ```billingZip``` parameter becomes optional. If you still wish to provide a ```billingZip``` without rendering the input - you may do so, as demonstrated below (this would hide the ZIP input field, but would still create a payment token with the ```billingZip``` provided in the call).   
 However, if you wish to omit the ```billingZip``` completely, you may do so by hiding the zip input and passing no parameters to the ```createPayment``` function.
