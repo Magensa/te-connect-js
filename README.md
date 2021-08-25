@@ -16,8 +16,8 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
 ```
 
 If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
@@ -161,7 +161,7 @@ These are the possible objects that will be returned *successfully* from the ```
     customerTranRef: String,
     token: String,
     code: String,
-    message: String
+    message: String,
     status: Number,
     cardMetaData: null | {
         maskedPAN: String,
@@ -207,6 +207,7 @@ Below we have the complete API with examples of default values for each.
 | padding | wrapper | ```string``` or ```number``` | jss spacing units (rem, em, px, etc) | ```'1rem'``` | container padding |
 | inputType | variants | ```string``` | ```"outlined", "filled", "standard"``` | ```"outlined"``` | template design for input boxes |
 | inputMargin | variants | ```string``` | ```"dense", "none", "normal"``` | ```"normal"``` | template padding & margins for input boxes |  
+| autoMinHeight | variants | ```boolean``` | ```boolean``` | ```false``` | ```true``` will maintain a static margin on each input box that will not grow with validation errors | 
   
 <br />
 
@@ -220,7 +221,8 @@ Below we have the complete API with examples of default values for each.
         },
         variants: {
             inputType: 'outlined',
-            inputMargin: 'normal'
+            inputMargin: 'normal',
+            autoMinHeight: false
         },
         backgroundColor: '#fff'
     }
@@ -355,8 +357,8 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
 
-    <script src="https://cdn.magensa.net/te-connect/1.0.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
