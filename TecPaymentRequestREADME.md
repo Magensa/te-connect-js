@@ -636,7 +636,7 @@ function demoInit() {
             completeShippingMethodSelection(outOfCountryShipping);
         else
             completeShippingMethodSelection(freeShipping);
-    }
+    });
 }
 
 demoInit();
