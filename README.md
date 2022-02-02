@@ -21,8 +21,10 @@ or via CDN:
 ```
 
 If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
-One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN
+One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN  
 
+
+# Step-by-step
 1. The first step is to create a TEConnect instance (from ```te-connect```), and feed that instance to the ```TeConnectJs``` (from ```te-connect-js```) constructor.
 
 ```main.js```
@@ -149,6 +151,25 @@ function demoInit() {
 
 demoInit();
 ``` 
+
+# TEConnect Options
+The second parameter of the ```createTEConnect``` method is an options object. This object is optional.
+| Property Name  | Input Type | Notes |
+|:--:|:--:|:--:|
+| billingZip | ```boolean``` | See implementation above |
+| tecPaymentRequest | ```TecPaymentRequestOptions``` | See the [Payment Request README for more info](TecPaymentRequestREADME.md) |
+| appleMerchantId | string | This property is part of a child object supplied to ```tecPaymentRequest```. Provide a valid ```appleMerchantId``` to [opt in for Apple Pay](TecPaymentRequestREADME.md) |
+
+```typescript
+type TecPaymentRequestOptions = {
+    appleMerchantId?: string
+}
+
+type CreateTEConnectOptions = {
+    hideZip?: boolean,
+    tecPaymentRequest?: TecPaymentRequestOptions
+}
+```
  
 # createPayment Return Objects
 These are the possible objects that will be returned *successfully* from the ```createPayment``` function. Thrown errors will be thrown as any other async method.  
@@ -156,12 +177,12 @@ These are the possible objects that will be returned *successfully* from the ```
   1. ### Success:
 ```typescript
 {
-    magTranID: String,
-    timestamp: String,
-    customerTranRef: String,
-    token: String,
-    code: String,
-    message: String,
+    magTranID: String,
+    timestamp: String,
+    customerTranRef: String,
+    token: String,
+    code: String,
+    message: String
     status: Number,
     cardMetaData: null | {
         maskedPAN: String,
@@ -174,12 +195,12 @@ These are the possible objects that will be returned *successfully* from the ```
   2. ### Bad Request
 ```typescript
 {
-    magTranID: String,
-    timestamp: String,
-    customerTranRef: String,
-    token: null,
-    code: String,
-    message: String,
+    magTranID: String,
+    timestamp: String,
+    customerTranRef: String,
+    token: null,
+    code: String,
+    message: String,
     error: String,
     cardMetaData: null
 }
