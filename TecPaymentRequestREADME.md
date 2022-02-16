@@ -12,8 +12,8 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
 ```
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.1.0/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.1.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
 ```
 If you would prefer to let the code speak, below we have three [example implementations](#Example-Implementation). One is minimally viable, while the other utilizes all available features.
 

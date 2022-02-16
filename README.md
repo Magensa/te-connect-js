@@ -16,8 +16,8 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
 ```
 
 If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
@@ -378,8 +378,8 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
 
-    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
