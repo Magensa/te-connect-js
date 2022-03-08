@@ -1,4 +1,4 @@
-# TEConnect Payment Request (React)
+# TEConnect Payment Request JS
 [![npm version](https://img.shields.io/npm/v/@magensa/te-connect-js.svg?style=for-the-badge)](https://www.npmjs.com/package/@magensa/te-connect-js "@magensa/te-connect-js npm.js")  
 JavaScript module for use with Apple Pay via Token Exchange Connect
 
