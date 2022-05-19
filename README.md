@@ -16,13 +16,15 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
 ```
 
 If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
-One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN
+One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN  
 
+
+# Step-by-step
 1. The first step is to create a TEConnect instance (from ```te-connect```), and feed that instance to the ```TeConnectJs``` (from ```te-connect-js```) constructor.
 
 ```main.js```
@@ -149,6 +151,25 @@ function demoInit() {
 
 demoInit();
 ``` 
+
+# TEConnect Options
+The second parameter of the ```createTEConnect``` method is an options object. This object is optional.
+| Property Name  | Input Type | Notes |
+|:--:|:--:|:--:|
+| billingZip | ```boolean``` | See implementation above |
+| tecPaymentRequest | ```TecPaymentRequestOptions``` | See the [Payment Request README for more info](TecPaymentRequestREADME.md) |
+| appleMerchantId | string | This property is part of a child object supplied to ```tecPaymentRequest```. Provide a valid ```appleMerchantId``` to [opt in for Apple Pay](TecPaymentRequestREADME.md) |
+
+```typescript
+type TecPaymentRequestOptions = {
+    appleMerchantId?: string
+}
+
+type CreateTEConnectOptions = {
+    hideZip?: boolean,
+    tecPaymentRequest?: TecPaymentRequestOptions
+}
+```
  
 # createPayment Return Objects
 These are the possible objects that will be returned *successfully* from the ```createPayment``` function. Thrown errors will be thrown as any other async method.  
@@ -156,12 +177,12 @@ These are the possible objects that will be returned *successfully* from the ```
   1. ### Success:
 ```typescript
 {
-    magTranID: String,
-    timestamp: String,
-    customerTranRef: String,
-    token: String,
-    code: String,
-    message: String,
+    magTranID: String,
+    timestamp: String,
+    customerTranRef: String,
+    token: String,
+    code: String,
+    message: String
     status: Number,
     cardMetaData: null | {
         maskedPAN: String,
@@ -174,12 +195,12 @@ These are the possible objects that will be returned *successfully* from the ```
   2. ### Bad Request
 ```typescript
 {
-    magTranID: String,
-    timestamp: String,
-    customerTranRef: String,
-    token: null,
-    code: String,
-    message: String,
+    magTranID: String,
+    timestamp: String,
+    customerTranRef: String,
+    token: null,
+    code: String,
+    message: String,
     error: String,
     cardMetaData: null
 }
@@ -205,6 +226,8 @@ Below we have the complete API with examples of default values for each.
 | backgroundColor | base | ```string``` | jss color (rgb, #, or color name) | ```"#fff"``` | container background color |
 | margin | wrapper | ```string``` or ```number``` | jss spacing units (rem, em, px, etc) | ```'1rem'``` | container margin |
 | padding | wrapper | ```string``` or ```number``` | jss spacing units (rem, em, px, etc) | ```'1rem'``` | container padding |
+| direction | wrapper | ```string``` | ```'row', 'row-reverse', 'column', 'column-reverse'``` | ```'row'``` | ```'flex-direction'``` style property |
+| flexWrap | wrapper | ```string``` | ```'wrap', 'wrap', 'wrap-reverse'``` | ```'wrap'``` | ```'flex-wrap'``` style property |
 | inputType | variants | ```string``` | ```"outlined", "filled", "standard"``` | ```"outlined"``` | template design for input boxes |
 | inputMargin | variants | ```string``` | ```"dense", "none", "normal"``` | ```"normal"``` | template padding & margins for input boxes |  
 | autoMinHeight | variants | ```boolean``` | ```boolean``` | ```false``` | ```true``` will maintain a static margin on each input box that will not grow with validation errors | 
@@ -217,7 +240,9 @@ Below we have the complete API with examples of default values for each.
     base: {
         wrapper: {
             margin: '1rem',
-            padding: '1rem'
+            padding: '1rem',
+            direction: 'row',
+            flexWrap: 'wrap'
         },
         variants: {
             inputType: 'outlined',
@@ -357,8 +382,8 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
 
-    <script src="https://cdn.magensa.net/te-connect/1.0.4/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.0.2/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
