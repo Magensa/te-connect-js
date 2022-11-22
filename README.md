@@ -16,8 +16,8 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.2.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
 ```
 
 # Manual Card Entry
