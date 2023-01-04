@@ -16,10 +16,14 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.2.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
 ```
 
+# Manual Card Entry
+This document will cover the card manual entry utility that TEConnect offers.  
+TEConnect also offers a [Payment Request](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md) utility as well, with both Apple Pay and Google Pay supported. [Payment Request Documentation can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md)  
+Below we will begin with a step-by-step integration of the card manual entry utility.  
 If you would prefer to let the code speak, below we have two [example implementations](#Example-Implementation). 
 One is using npmjs - while [the other](#Example-Implementation-CDN) uses our CDN  
 
@@ -157,12 +161,12 @@ The second parameter of the ```createTEConnect``` method is an options object. T
 | Property Name  | Input Type | Notes |
 |:--:|:--:|:--:|
 | billingZip | ```boolean``` | See implementation above |
-| tecPaymentRequest | ```TecPaymentRequestOptions``` | See the [Payment Request README for more info](TecPaymentRequestREADME.md) |
-| appleMerchantId | string | This property is part of a child object supplied to ```tecPaymentRequest```. Provide a valid ```appleMerchantId``` to [opt in for Apple Pay](TecPaymentRequestREADME.md) |
+| tecPaymentRequest | ```TecPaymentRequestOptions``` | See the [Payment Request README for more info](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md) |  
 
 ```typescript
 type TecPaymentRequestOptions = {
-    appleMerchantId?: string
+    appleMerchantId?: string,
+    googleMerchantId?: string
 }
 
 type CreateTEConnectOptions = {
@@ -382,8 +386,8 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
 
-    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.2.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
 
     <script>
         function demoInit() {

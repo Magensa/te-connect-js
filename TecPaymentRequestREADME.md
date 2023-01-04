@@ -2,6 +2,9 @@
 [![npm version](https://img.shields.io/npm/v/@magensa/te-connect-js.svg?style=for-the-badge)](https://www.npmjs.com/package/@magensa/te-connect-js "@magensa/te-connect-js npm.js")  
 JavaScript module for use with Apple Pay via Token Exchange Connect
 
+# Payment Request Platforms
+TEConnect currently offers two payment request platforms to create payment tokens: [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md).  The payment tokens are processed via [Magensa's Payment Protection Gateway](https://svc1.magensa.net/MPPGv4/MPPGv4Service.svc) (MPPG). To that end - there are many configurable options exposed when using [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) via TEConnect.  This document will focus on a very simple implementation using both platforms. If you are interested in a more customized experience for your users, using [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and/or [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) - check out the [TecApplePayREADME.md](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and/or [TecGooglePayREADME](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) which will cover more specific configuration for each - as well as links to Apple/Google's documentation, respectively.
+
 # Getting Started
 ```
 npm install @magensa/te-connect @magensa/te-connect-js
@@ -12,17 +15,22 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
 ```
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.1.1/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.1.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.2.1/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
 ```
-If you would prefer to let the code speak, below we have three [example implementations](#Example-Implementation). One is minimally viable, while the other utilizes all available features.
+If you would prefer to let the code speak, below we have an [example implementation](#Example-Implementation) for both platforms - along with a [Google Pay complex example](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Example-Implementation) and an [Apple Pay complex example](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Example-Implementation)
 
 # Step-by-step
 1. The first step is to create a TEConnect instance, and feed that instance to the TeConnectJs (from ```@magensa/te-connect-js```) constructor.
-    - The first parameter is your public key for [TEConnect manual entry](https://github.com/Magensa/te-connect-js) (```CardEntry``` component).
+    - The first parameter is your public key for [TEConnect manual entry](https://github.com/Magensa/te-connect-js).
     - The second parameter is the [```options``` object](https://github.com/Magensa/te-connect-js#teconnect-options)
         - For the ```tecPaymentRequest``` options - supply your ```appleMerchantId``` to enable Apple Pay.
-            - ```appleMerchantId``` is obtained after the on-boarding process with Magensa™ is completed.  
+            - ```appleMerchantId``` is obtained after the on-boarding process with Magensa™ is completed. [Please reach out to Magensa™ support team for more info](https://www.magensa.net/support.html)
+            - supply your ```googleMerchantId``` to enable Google Pay.
+                - ```googleMerchantId``` is obtained after the [on-boarding process with Google](https://pay.google.com/business/console) is completed.
+                - For Google Pay capabilities - ```googleMerchantId```, ```googleMerchantName```, and ```gatewayId``` are needed.
+                    - ```gatewayId``` is obtained after the on-boarding process with Magensa™ is completed. [Please reach out to Magensa™ support team for more info](https://www.magensa.net/support.html)
+                    - ```googleMerchantId``` and ```googleMerchantName``` are obtained using [Google Pay and Wallet Console](https://pay.google.com/business/console). [More info on MerchantInfo here](https://developers.google.com/pay/api/web/reference/request-objects#MerchantInfo). Be aware that the name and id are fed to TEConnect seperately - which differs from the direct integration [Google Pay documentation](https://developers.google.com/pay/api/web/reference/request-objects#MerchantInfo).
             
 ```main.js```
 ```javascript
@@ -31,7 +39,10 @@ import { TeConnectJs } from '@magensa/te-connect-js';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -41,9 +52,11 @@ demoInit();
 ```  
 
 2. Build a [```paymentRequestObject```](#Payment-Request-Object) to define the Payment Request Form.
+    - [Apple's Payment Request Object Structure](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Payment-Request-Object), [Google's Payment Request Object Structure](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Payment-Request-Object).
     - Once you have built your [payment request object](#Payment-Request-Object). Supply that object to the  [```createPaymentRequestInterface```](#Create-Payment-Request-Interface) function.
+        - Note that if you are using multiple platforms (i.e. both Apple and Google) you must seperate the payment request objects by platform (i.e. ```{ googlePay: {...}, applePay: {...}}```).
         - This function will return the [TecPaymentRequestsInterface](#Token-Exchange-Connect-Payment-Request-Interface) (referred to as ```tecPrInterface```, in this document).
-    - Call the [```canMakePayments```](#canMakePayments) function, and await the result to determine if the user is capable of using Payment Requests (Apple Pay).  
+    - Call the [```canMakePayments```](#canMakePayments) function, and await the result to determine if the user is capable of using Apple Pay, Google Pay, both, or none.  
 
 ```main.js```
 ```javascript
@@ -54,7 +67,10 @@ import { examplePaymentRequestObject } from '../consts';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -72,14 +88,6 @@ demoInit();
 
 3. Next, design your page according to your specifications - and create a ```<div>``` with a unique id. Once the interface has been instantiated, and the [```CanMakePaymentsResult```](#CanMakePaymentsResult) yeilds a positive result - use the ```tecPrInterface``` to mount the Payment Request Button on that div.  
 
-```index.html```
-```html
-<body>
-    <div id="example-div"></div>
-    <script src='main.bundle.js'></script>
-</body>
-```
-
 ```main.js```
 ```javascript
 import { createTEConnect } from '@magensa/te-connect';
@@ -89,7 +97,10 @@ import { examplePaymentRequestObject } from '../consts';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -104,9 +115,16 @@ function demoInit() {
 
 demoInit();
 ```  
+**Note** that if you are using more than one Payment Request Platform (i.e. both Apple Pay and Google Pay) you can supply a string value (as demonstrated above), and whichever (or both) buttons available will be mounted as children of the tag with that id.
+- Optionally you may also specify which buttons you would like on which tag id - such as:
+```javascript
+tecPrInterface.mountTecPrButton("example-div");
+//or
+tecPrInterface.mountTecPrButton({ applePayNode: "example-div", googlePayNode: "another-div" });
+```
 
 3. Finally - when a user submits the payment request form - an event is emitted. Listen to the [```confirm-token```](#confirm-token-Event) event to inspect the result (as demonstrated below).
-    - The ```completePayment``` function is a property of the ```confirm-token``` event. This function must be called within 30 seconds of the event firing - otherwise the form will timeout.
+    - The ```completePayment``` function is a property of the ```confirm-token``` event _for Apple Pay only_. If the function exists - this function must be called within 30 seconds of the event firing - otherwise the Apple Pay form will timeout.
 
 ```index.html```
 ```html
@@ -125,7 +143,10 @@ import { examplePaymentRequestObject } from '../consts';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -142,11 +163,15 @@ function demoInit() {
 
         if (error) {
             //Unsuccessful - check message.
-            completePayment('failure');
+            if (typeof(completePayment) === 'function')
+                completePayment('failure');
         }
         else {
-            //Successful - close user's payment request form with payment success notification.
-            completePayment('success');
+            //Successful
+            //Pass `tokenDetails.token` directly to MPPG for processing.
+            //if Apple Pay - close user's payment request form with payment success notification.
+            if (typeof(completePayment) === 'function')
+                completePayment('success');
         }
     });
 }
@@ -154,19 +179,15 @@ function demoInit() {
 demoInit();
 ```  
 
-The above is a minimally viable solution to get you started. There are [two more code examples](#example-implementation) - a minimally viable example, as well as a more complex example to leverage more of the features available. Read on for further features and details availble to the Payment Request Utility.  
+The above is a minimally viable solution to get you started. There are three more code examples - a [minimally viable example](#example-implementation) using both Apple Pay and Google Pay, as well as two more complex examples to leverage more of the features available, for each respective platform ([Apple Pay Complex Example here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Example-Implementation), [Google Pay Complex Example here](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Example-Implementation)). Read on for further features and details availble to the Payment Request Utility.  
 <br />
 
 # Payment Request Object
 The Payment Request Object is the only parameter for the [```createPaymentRequestInterface```](#Create-Payment-Request-Interface) function. This object describes the form that the end-user will interact with.
-While all payment requests will require a payment request object to define your form - currently TEConnect only supports Apple Pay as a Payment Request Provider.  To that end - this section will specifically address the [ApplePayPaymentRequest object](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentrequest).
-- [Here is Apple's Documentation about the payment request object](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentrequest)
-- It is encouraged to read through Apple's documentation for all the options available to you to define your form.
-- Be aware that any inaccuracy in the payment request object will most likely throw a ```TypeError``` without a message. Any errors that come from Apple's javascript rarely have any messages attached to errors.
+Each platform will have a different payment request object with different properties. If your application has opted-in for more than one platform (i.e. both Google and Apple Pay) - be sure to seperate the payment request objects by platform:  
 
-Below is an example of a Payment Request object.  This is where your form is defined - so each customer's object will appear differently, depending on the customer's circumstances.
 ```javascript
-const examplePaymentRequestObject = {
+const applePaymentRequestObject = {
     storeDisplayName: "TEConnect Example Store",
     currencyCode: "USD",
     countryCode: "US",
@@ -176,57 +197,32 @@ const examplePaymentRequestObject = {
         label: "Test Transaction",
         amount: "1.00",
         type: "final"
-    },
-    shippingType: ['shipping'],
-    shippingMethods: [
-        {    
-            label: 'Free Shipping',
-            detail: "Arrives in a week",
-            amount: '0.00',
-            identifier: "FreeShipping"
-        },
-        {    
-            label: 'Not Free Shipping',
-            detail: "Arrives in less than week",
-            amount: '10.00',
-            identifier: "ChargeShipping"
-        }
-    ],
-    requiredShippingContactFields: [
-        'name',
-        'email',
-        'phone',
-        'postalAddress'
-    ],
-    requiredBillingContactFields: [
-        'name',
-        'postalAddress'
-    ],
-    shippingContact: {
-        phoneNumber: '888-8888',
-        emailAddress: 'something@example.net',
-        givenName: 'Bob',
-        familyName: 'Kahuna',
-        addressLines: ['123 Main St.', 'Suite 101'],
-        locality: 'Los Angeles',
-        administrativeArea: 'CA',
-        postalCode: '90010',
-        country: 'United States',
-        countryCode: 'US',
-    },
-    billingContact: {
-        emailAddress: 'something@example.net',
-        givenName: 'Bob',
-        familyName: 'Kahuna',
-        addressLines: ['123 Main St.', 'Suite 101'],
-        subLocality: 'Los Angeles',
-        locality: 'CA',
-        postalCode: '90010',
-        country: 'United States',
-        countryCode: 'US',
     }
 };
+
+const googlePaymentRequestObject = {
+    allowedCardNetworks: ["AMEX", "DISCOVER", "JCB", "MASTERCARD", "MIR", "VISA"],
+	merchantName: "TEConnect Example Merchant",
+	gatewayId: "_gateway_id_provided_by_Magensa_",
+	transactionInfo: {
+		totalPriceStatus: 'FINAL',
+		totalPrice: '1.23',
+		currencyCode: 'USD',
+		countryCode: 'US'
+    }
+};
+
+const teConnectPaymentRequestObject = {
+    applePay: applePaymentRequestObject,
+    googlePay: googlePaymentRequestObject
+};
 ```
+
+### Apple Pay Payment Request Object
+[More information and helpful links about Apple's Payment Request Object can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Payment-Request-Object)
+
+### Google Pay Payment Request Object
+[More information and helpful links about Google's Payment Request Object can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Payment-Request-Object)
 
 # Token Exchange Connect Payment Request Interface
 The Token Exchange Connect Payment Request Interface (referred to as the ```tecPrInterface```) is the interface needed to interact, and respond to user's interactions on the Payment Request Form.
@@ -246,7 +242,10 @@ import { examplePaymentRequestObject } from '../consts';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -266,7 +265,8 @@ demoInit();
 #### ```CanMakePaymentsResult```
 ```typescript
 type CanMakePaymentsResult = {
-    applePay: boolean
+    applePay?: boolean,
+    googlePay?: boolean
 } | null;
 ```
 
@@ -278,31 +278,45 @@ This function is only useful _before_ the user has hit the Apple Pay button.  If
 ### ```listenFor```
 This function accepts an event name (```string```) to listen for, as well as a listener function. These events are specific to payment request interface instance created. Please [see the section below](#Payment-Request-Event-Handlers) for more details.
 
+### ```mountTecPrButton```
+This function accepts a HTML element id (```string```) or an object as the first parameter. If a string is supplied - TEConnect will mount all available payment request buttons as children of the HTML element with the ```id``` supplied.  Optionally - you may specify which buttons should be mounted where. Again the property values should be HTML element ids (```strings```).
+
+```javascript
+tecPrInterface.mountTecPrButton("example-div");
+//or
+tecPrInterface.mountTecPrButton({ applePayNode: "example-div", googlePayNode: "another-div" });
+```
+
+The second parameter is optional, for the [payment request button options](#Payment-Request-Button-Options).
+```javascript
+const buttonOptions = {
+    applePayOptions: {...},
+    googlePayOptions: {...}
+}
+tecPrInterface.mountTecPrButton("example-div", buttonOptions);
+//or
+tecPrInterface.mountTecPrButton({ applePayNode: "example-div", googlePayNode: "another-div" }, buttonOptions);
+```
 
 # Payment Request Event Handlers
-When users interact with the payment request form - there are several events that are fired. Listening to the ```confirm-token``` event is required to complete the workflow, but there are more events that may be subscribed to - optionally.  At this time, Apple Pay is the only payment request platform available via TEConnect. To that end, we will focus on Apple specific events in this document.  
-  
-## Apple Pay Listeners
-When [qualified Apple Pay users](#User-Requirements) interact with the Apple Pay form, there are several events that may be subscribed to. Each event will fire with an object (describing the event) and a function (to respond to the event). Be aware that if an event is subscribed to - the response function _must_ be called with a response within 30 seconds - otherwise the form will timeout. The only exception to this is the ```cancel-transaction``` event - which only contains a message.  
-Examples of all the listeners can be found in the more complex of the [Example Implementations](#Example-Implementation)
+Listening to the ```confirm-token``` event is required to complete the workflow for all payment platforms.
+
+Apple Pay uses an event handler driven workflow. When users interact with the payment request form - there are several events that are fired.   
+[More details about Apple Pay listeners here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Listeners)
 
 ### ```confirm-token``` Event
-This is the only event listener that is required to complete the Apple Pay workflow. This is the only event that can optionally contain an ```error``` property (in the case the payment was submitted, but was unsuccessful). Be sure to check for that property first, if it exists.  
-When listening to the ```confirm-token``` event - there will be two special properties to the event:
+This is the only event listener that is required to complete both workflows. This is the only event that can optionally contain an ```error``` property (in the case the payment was submitted, but was unsuccessful). Be sure to check for that property first, if it exists.  
+When listening to the ```confirm-token``` event - there will be up to two special properties to the event:
 - ```tokenDetails```
     - ```type``` specifies the payment request platform in which the token was created.
-        - Currently any successful token creation will be of type ```applePay```.
+        - ```applePay``` or ```googlePay```.
     - ```token``` will be the object needed to process transactions, using the payment token created during the current session.
+        - Pass the ```token``` to the appropriate MPPG operation, unaltered, for processing.
     - ```error``` is an optional property in the case the token creation was unsuccessful.
 - ```completePayment```
-    - Call this function within 30 seconds of receiving it - otherwise a timeout error will occur and close the payment form.
-    - There are two possible value types to call this function with - either a string value, or an object:
-        - This function expects either ```"sucess"``` or ```"failure"``` as string options - and will display the chosen completion status on the form.
-        - Optionally, if you've confirmed the user is a [qualified Apple Pay user](#User-Requirements) (```canMakePayments``` result has returned ```{ applePay: true }```) you can provide an [Apple Pay Authorization Result](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentauthorizationresult) for more descriptive error messages.
-            - In this case - there will be a ```status``` and an ```errors``` property. The status must be provided in a recognized format ([as demonstrated in the Apple docs](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentauthorizationresult)).
-                - Since this is an error scenario it's likely that the value needed would be: ```ApplePaySession.STATUS_FAILURE```.
-                - It's important to confirm that the user is a [qualified Apple Pay user](#User-Requirements) before providing this object - as ```ApplePaySession``` is a global variable that will not exist (throw an error) in all other browsing contexts.
-            - The ```errors``` can be supplied as explained in the [Payment Request Error Handling](#Payment-Request-Error-Handling) section.  
+    - This function will only exist for Apple Pay tokens. It is used to close the Apple Pay form with a status message. 
+        - [More information about ```completePayment``` can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Listeners)
+        - This property will not exist for Google Pay tokens. This is one of the many ways to differentiate between which platform the user is using to complete the transaction.
             
 ```confirm-token``` example: 
 ```javascript
@@ -315,7 +329,10 @@ function demoInit() {
     var isAppleUser = false;
 
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__" 
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -348,7 +365,15 @@ function demoInit() {
             }
         }
         else {
-            completePayment('success')
+            if (isAppleUser === true) {
+                //tokenDetails.type === 'applePay';
+                completePayment('success');
+                //pass `tokenDetails.token` to MPPG to process payment
+            }                    
+            else {
+                //tokenDetails.type === 'googlePay'
+                //pass `tokenDetails.token` to MPPG to process payment
+            }
         }
     });
 }
@@ -356,59 +381,14 @@ function demoInit() {
 demoInit();
 ```  
 
-### ```payment-method-selection``` Event
-When listening to the ```payment-method-selection``` event - there will be two special properties to the event:
-- ```paymentMethod```
-    - This object will provide details about the currently selected payment method. If you subscribe to this event - it will fire at least once (when the payment form loads), and will fire every time the user changes the payment method (during the current session). You must call ```completePaymentMethodSelection``` within 30 seconds of receiving the event - or a timeout will occur and close the payment form.  
-    - The object's structure is defined in [Apple's documentation here](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentmethod).
-- ```completePaymentMethodSelection```
-    - Call this function within 30 seconds of receiving it - otherwise a timeout error will occur and close the payment form.
-    - A [Payment Method Update](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentmethodupdate) object is required to invoke this function. ```'newTotal'``` [line item](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaylineitem) will reflect the total cost of all the purchased items.
-        - More information on the [Payment Method Update](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentmethodupdate) object.
-        - More information on [line items](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaylineitem)
-    - Only provide ```'newLineItems'``` if there are new or updated costs or discounts (depending on the payment method the user has selected) - Otherwise pass an empty array or ```null```.  
-
-
-### ```shipping-contact-update``` Event
-When listening to the ```shipping-contact-update``` event - there will be two special properties to the event:
-- ```shippingContact```
-    - This object will provide details about the currently selected shipping contact. If you subscribe to this event - it will fire every time the user changes their shipping contact (during the current session) - or if they edit their selected shipping contact mid-session. You must call ```completeShippingContactSelection``` within 30 seconds of receiving the event - or a timeout will occur and close the payment form.  
-    - The object's structure is defined in [Apple's documentation here](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentcontact).
-- ```completeShippingContactSelection```
-    - Call this function within 30 seconds of receiving it - otherwise a timeout error will occur and close the payment form.
-    - A [Shipping Contact Update](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayshippingcontactupdate) object is required to be supplied to this function.
-        - More information about the [update object is here](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayshippingcontactupdate) 
-
-### ```shipping-method-update``` Event
-When listening to the ```shipping-method-update``` event - there will be two special properties to the event:
-- ```shippingMethod```
-    - This object will provide details about the currently selected shipping method. If you subscribe to this event - it will fire every time the user changes their shipping method (during the current session). You must call ```completeShippingMethodSelection``` within 30 seconds of receiving the event - or a timeout will occur and close the payment form.  
-    - The object's structure is defined in [Apple's documentation here](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayshippingmethod).
-- ```completeShippingMethodSelection```
-    - A [Shipping Method Update](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayshippingmethodupdate) object is required to be supplied to this function.
-        - More information about the [update object is here](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayshippingcontactupdate)
-
-### ```cancel-transaction``` Event
-When listening to the ```cancel-transaction``` event - there will only be a ```reason``` notifying you that the customer's payment request form has been dismissed.
-
 # Payment Request Button Options
-The ```TecPaymentRequestButtons``` component accepts an optional prop named ```tecPrOptions```.  Here you can define your custom options for the payment request buttons.  At this time - Apple Pay is the only supported platform. You may define custom values for the Apple Pay Button, using the property ```applePayOptions``` (You can see the [default values](#Default-Payment-Request-Button-Options-Values), for an example on how to structure the object, [below]).
+The ```mountTecPrButton``` function accepts an optional second parameter.  Here you can define your custom options for the payment request buttons.  You may define custom values for the Apple Pay Button, using the property ```applePayOptions```, and Google Pay Button with ```googlePayOptions```.  You can see the [default values](#Default-Payment-Request-Button-Options-Values), for an example on how to structure the object, below.
 
 ## Apple Pay Button Options
-There are many options and styles available to assist with tailoring the Apple Pay Button to your specifications. There are a few things to be aware of:
-- Apple has defined [guidelines for displaying the Apple Pay button](https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/buttons-and-marks)
-    - The "Button Types" and "Button Styles" mentioned in the [guidelines](https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/buttons-and-marks) can be supplied in the Apple Pay Button Options.
-- ```buttonLanguage``` and ```buttonType``` values are not validated, and will be applied directly to the button's style properties. Please check the supplied value for accuracy. 
-    - ```buttonStyle```, however, is validated, and will display an accurate value supplied - or default to ```'black'```, if the value is not recognized.
-- In addition to the Apple Pay Button options available - it is also possible to apply your own custom styles to the button using CSS. Target the button's ```id```:
-    - ```"te-connect-apple-pay-btn"```
-    - When applying custom CSS - please be sure to adhere to [Apple's Guidelines](https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/buttons-and-marks)
+[More details about Apple Pay Button Options can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Button-Options)
 
-| Property Name | Type | Possible Values |
-|:--:|:--:|:--:|
-| ```buttonLanguage``` | ```string``` | [available button languages](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonlocale) | 
-```buttonType``` | ```string``` | [available button types](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttontype) |
-| ```buttonStyles``` | ```string``` | ```'black'``` ```'white'``` ```'white-outline'``` [available button styles](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonstyle)  |
+## Google Pay Button Options
+[More details about Google Pay Button Options can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Button-Options)
 
 #### Default Payment Request Button Options Values:  
   
@@ -418,20 +398,26 @@ const defaultButtonOptions = {
         buttonLanguage: 'en',
         buttonType: 'plain',
         buttonStyle: 'black'
+    },
+    googlePayOptions: {
+        preClick: undefined, //Only calls if is of type 'function'
+        buttonColor: undefined, //Currently defaults to 'black' but default is not static, and is determined by Google
+        buttonType: undefined, 
+        buttonLocale: undefined, //If not supplied - defaults to browser or OS language settings
+        buttonSizeMode: 'static'
     }
 };
 ```
 
 # Example Implementation
-There are two example implementations below - a minimally viable, as well as a more complex implementation. Be aware that any implementation is also available via CDN. There is [a manual entry example using our CDN](README.md#Example-Implementation-CDN) for reference on implementation.  
-
-Below you will find a minimally viable implementation.  
+Below you will find a minimally viable implementation. Be aware that any implementation is also available via CDN. There is [a manual entry example using our CDN](https://github.com/Magensa/te-connect-js#Example-Implementation-CDN) for reference on implementation.  
 
 ```index.html```
 ```html
 <body>
     <h1>Token Exchange Connect Apple Pay</h1>
     <div id="example-div"></div>
+    <div id="example-seperate-div"></div>
     <script src='main.bundle.js'></script>
 </body>
 ```
@@ -445,7 +431,10 @@ import { examplePaymentRequestObject } from '../consts';
 
 function demoInit() {
     var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
+        tecPaymentRequest: { 
+            appleMerchantId: "__tecAppleMerchantId__",
+            googleMerchantId: "__googleMerchantId__"
+        }
     });
 
     var teConnect = new TeConnectJs(teInstance);
@@ -454,7 +443,7 @@ function demoInit() {
 
     tecPrInterface.canMakePayments().then( canMakePaymentsResult => {
         if (canMakePaymentsResult)
-            tecPrInterface.mountTecPrButton("example-div");
+            tecPrInterface.mountTecPrButton({ applePayNode: "example-div", googlePayNode: "example-seperate-div" });
     });
 
     tecPrInterface.listenFor('confirm-token', tokenResp => {
@@ -462,180 +451,16 @@ function demoInit() {
 
         if (error) {
             //Unsuccessful - check message.
-            completePayment('failure');
+            if (typeof(completePayment) === 'function')
+                completePayment('failure');
         }
         else {
-            //Successful - close user's payment request form with payment success notification.
-            completePayment('success');
+            //Successful
+            //Pass `tokenDetails.token` directly to MPPG for processing.
+            //if Apple Pay - close user's payment request form with payment success notification.
+            if (typeof(completePayment) === 'function')
+                completePayment('success');
         }
-    });
-}
-
-demoInit();
-```  
-
-
-Below you will find a more complex implementation:  
-
-```index.html```
-```html
-<body>
-    <h1>Token Exchange Connect Apple Pay</h1>
-    <div id="example-div"></div>
-    <script src='main.bundle.js'></script>
-</body>
-```
-
-```main.js```
-```javascript
-import { createTEConnect } from '@magensa/te-connect';
-import { TeConnectJs } from '@magensa/te-connect-js';
-
-import { examplePaymentRequestObject } from '../consts';
-
-const customButtonOptions= {
-    applePayOptions: {
-        buttonLanguage: 'ja',
-        buttonType: 'book',
-        buttonStyle: "white-outline"
-    }
-};
-
-function demoInit() {
-    var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
-    });
-
-    var teConnect = new TeConnectJs(teInstance);
-
-    var tecPrInterface = teConnect.createTecPaymentRequest(examplePaymentRequestObject);
-
-    tecPrInterface.canMakePayments().then( canMakePaymentsResult => {
-        if (canMakePaymentsResult)
-            tecPrInterface.mountTecPrButton("example-div");
-    });
-
-    tecPrInterface.listenFor('confirm-token', tokenResp => {
-        const { tokenDetails, completePayment, error } = tokenResp;
-
-        if (error) {
-            //Unsuccessful - check message.
-            completePayment('failure');
-        }
-        else {
-            //Successful - close user's payment request form with payment success notification.
-            completePayment('success');
-        }
-    });
-
-    tecPrInterface.listenFor('cancel-transaction', (cancelEvent) => {
-        console.log(cancelEvent);
-    });
-
-    tecPrInterface.listenFor('payment-method-selection', (paymentMethodEvent) => {
-        const { paymentMethod, completePaymentMethodSelection } = paymentMethodEvent;
-
-        const examplePaymentUpdateObj = {
-                newTotal: {
-                    label: "Updated Payment Method",
-                    amount: "0.00",
-                    type: "final"
-                }
-            }
-
-        if (paymentMethod.type === "credit") {
-            //Credit logic - if needed
-            const creditUpdateObj = { 
-                newTotal: {
-                    ...examplePaymentUpdateObj['newTotal'],
-                    amount: "1.10"
-                }
-            }
-
-            completePaymentMethodSelection(creditUpdateObj);
-        }
-        else if (paymentMethod.type === "debit") {
-            //Debit logic - if needed
-                const debitUpdateObj = { 
-                newTotal: {
-                    ...examplePaymentUpdateObj['newTotal'],
-                    amount: "0.10"
-                }
-            }
-
-            completePaymentMethodSelection(debitUpdateObj);
-        }
-
-        completePaymentMethodSelection(examplePaymentUpdateObj);
-    });
-
-    tecPrInterface.listenFor('shipping-contact-update', (shippingContactEvent) => {
-        const { shippingContact, completeShippingContactSelection } = shippingContactEvent;
-
-        const exampleShippingContactUpdateObj = {
-            newTotal: {
-                label: "Test Positive Transaction for Shipping Update",
-                amount: "1.00",
-                type: "final"
-            },
-            newShippingMethods: [
-                {    
-                    label: 'Outside Shipping Network',
-                    detail: "Arrives in 7-12 weeks",
-                    amount: '100.00',
-                    identifier: "OutOfCountryShip"
-                },
-                {    
-                    label: 'Free Shipping',
-                    detail: "Arrives in less than week",
-                    amount: '0.00',
-                    identifier: "FreeShipping"
-                }
-            ]
-        }
-
-        const errObj = {
-            newTotal: {
-                label: "Test Negative Transaction for Shipping Update",
-                amount: "1.00",
-                type: "final"
-            },
-            errors: [
-                {
-                    errorType: "addressInvalid",
-                    message: "Cannot Ship Outside the US"
-                }
-            ]
-        }
-
-        completeShippingContactSelection(
-            (shippingContact.countryCode === "US") ? exampleShippingContactUpdateObj : errObj
-        );
-    });
-
-    tecPrInterface.listenFor('shipping-method-update', (shippingMethodUpdateEvent) => {
-        const { shippingMethod, completeShippingMethodSelection } = shippingMethodUpdateEvent;
-
-        const freeShipping = {
-            newTotal: {
-                label: "Item with Free Shipping",
-                amount: "1.00",
-                type: "final"
-            }
-        }
-
-        const outOfCountryShipping = {
-            newTotal: {
-                label: "Item with Shipping Out of Network",
-                amount: "101.00",
-                type: "final"
-            }
-        }
-
-        if (shippingMethod.identifier === "OutOfCountryShip")
-            completeShippingMethodSelection(outOfCountryShipping);
-        else
-            completeShippingMethodSelection(freeShipping);
     });
 }
 
@@ -643,68 +468,6 @@ demoInit();
 ```  
 
 # Payment Request Error Handling
-This package is designed to be expanded upon in the future to include more Payment Request Providers. To that end, there are two [generic errors](#Generic-Errors) that will work regardless of payment request type/platform.  However, if you know which payment request type the user is currently interacting with - you may also provide [platform specific errors](#Platform-Specific-Errors) that can provide a more detailed error experience for your users. The ```errors``` array will accept either [generic errors](#Generic-Errors) or [platform specific errors](#Platform-Specific-Errors), or a mixture of the two.
-## Generic Errors
-Generic errors are an object that accept a ```"type"``` and ```"message"```.  There are currently two types:
-- ```"addressInvalid"```
-    - This error will notify user that the address they supplied (normally related to shipping address) is invalid for the transaction they chose. The message you supply can provide more details, if needed.
-- ```"failure"```
-    - This error will notify user with an "unknown" error and a message. Be aware that there are some instances (especially related to address info) in which the custom error message will not display correctly, and will only display an "unknown" error to the user. Since this option is difficult to direct the user how to correct the error - it's recommended to use this to catch errors which are actually unknown.
-- Example:
-
-```javascript
-{
-    type: "addressInvalid",
-    message: "Shipping not available in selected country"
-}
-```
-## Platform Specific Errors
-Platform specific errors rely on proprietary JavaScript, available only on the target platform. Beware that attempting to build a platform specific error on the incorrect platform (i.e. building a ```new ApplePayError``` on a Chrome browser) will result in errors.  
-
-To that end - if you plan to provide platform specific errors - ensure the code only executes if the target platform is available. Here is an ApplePay example error below:
-
-```javascript
-import { createTEConnect } from '@magensa/te-connect';
-import { TeConnectJs } from '@magensa/te-connect-js';
-
-import { examplePaymentRequestObject } from '../consts';
-
-function demoInit() {
-    var teInstance = createTEConnect("__publicKeyGoesHere__", { 
-        tecPaymentRequest: { appleMerchantId: "__tecAppleMerchantId__" }
-    });
-
-    var teConnect = new TeConnectJs(teInstance);
-
-    var tecPrInterface = teConnect.createTecPaymentRequest(examplePaymentRequestObject);
-
-    tecPrInterface.canMakePayments().then( canMakePaymentsResult => {
-        if (canMakePaymentsResult && canMakePaymentsResult.applePay) {
-            //User is using Safari and has ApplePay capabilities (Wallet), with an active card loaded on their device.
-            var exampleError = new ApplePayError("shippingContactInvalid", "postalCode", "ZIP Code is invalid");
-        }
-    });
-}
-
-demoInit();
-```  
-
-### Apple Pay
-Apple Pay accepts errors that are built using the ```ApplePayError``` class.  
-- Please ensure the class is available by either leveraging the [```canMakePayments```](#canMakePayments) function - or checking the ```window``` object for the ```ApplePayError``` class.
-- [Here is Apple's documentation for ```ApplePayError```](https://developer.apple.com/documentation/apple_pay_on_the_web/applepayerror)
-
-
-# Apple Pay Button Requirements
-Once the steps above are followed, and an Apple Pay capable web app is being served (for both development and production) the Apple Button will only display when __all__ pre-requisites are fulfilled:
-- Web Application pre-requisites:
-    - Must be registered as a Magensa™ Token Exchange customer with Apple Pay capabilities.
-        - This will grant you the ```appleMerchantId``` needed to supply to the ```teConnect``` instance.
-        - Here is a link for [Magensa™ Support](https://magensa.net/support.html) - if needed.
-    - Must register and verify public domain with Magensa™. Public domain must be served via ```https://``` only.
-- End-User's (Browsing) Pre-requisites:
-    - Must be using a compatible device:
-        - Compatible iOS or macOS device with Apple Pay capabilities:
-        -   [Apple's list of compatible device](https://support.apple.com/en-us/HT208531)
-    - Must have an active card loaded into the "Wallet" of the compatible device.
-    - Must be using Safari as the browsing agent.
+All Apple Pay callbacks accept an ```errors[]``` array. [More information here](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Error-Handling)  
+  
+Google Pay Errors are handled within the optional callbacks. [More information on that here](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Error-Handling)
