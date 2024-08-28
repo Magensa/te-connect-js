@@ -16,7 +16,7 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
 or via CDN:
 ```html
     <script src="https://cdn.magensa.net/te-connect/1.2.3/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.2.1/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.3/te-connect-js.js"></script>
 ```
 If you would prefer to let the code speak, below we have an [example implementation](#Example-Implementation) for both platforms - along with a [Google Pay complex example](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md#Google-Pay-Example-Implementation) and an [Apple Pay complex example](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Example-Implementation)
 

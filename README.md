@@ -17,7 +17,7 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
 or via CDN:
 ```html
     <script src="https://cdn.magensa.net/te-connect/1.2.3/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.3/te-connect-js.js"></script>
 ```
 
 # Manual Card Entry
@@ -387,7 +387,7 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="change-styles">Change Styles</button>
 
     <script src="https://cdn.magensa.net/te-connect/1.2.3/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.2.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.2.3/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
