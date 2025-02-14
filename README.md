@@ -16,7 +16,7 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.3.0/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.3.2/te-connect.js"></script>
     <script src="https://cdn.magensa.net/te-connect-js/1.3.0/te-connect-js.js"></script>
 ```
 
@@ -507,7 +507,7 @@ Alternatively - if your project requires a specific version - you may target tha
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
 
-    <script src="https://cdn.magensa.net/te-connect/1.3.0/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.3.2/te-connect.js"></script>
     <script src="https://cdn.magensa.net/te-connect-js/1.3.0/te-connect-js.js"></script>
 
     <script>
@@ -637,7 +637,13 @@ const exampleStyles = {
 
 
 function demoInit() {
-    var teInstance = createTEConnect("__your_public_key_here__");
+    var teInstance = createTEConnect("__your_public_key_here__", { 
+        threeds: {
+            threedsApiKey: "__3dsApiKeyGoesHere__",
+            threedsEnvironment: "sandbox"
+        }
+    });
+    
     var teConnect = new TeConnectJs(teInstance);
 
     teConnect.configureThreeds(exampleThreedsConfig);
