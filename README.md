@@ -187,7 +187,7 @@ type CreateTEConnectOptions = {
 
 <br />
 
-# TecThreeDs (3DS)
+# TecThreeDs (3DS) Optional Feature
 TEConnect Manual Entry offers 3DS Manual Entry. To opt-in, add a `threeds` parameter to the [the ```options``` object](#TEConnect-Options) for the `createTEConnect` method.  
 Add a 3DS API key (`threedsApiKey`) to the `threeds` object, and (optionally) a `threedsEnvironment` string as well (defaults to `sandbox` for testing, when not specified). Only flip your project to `production` when you have tested with `sandbox`, and are ready to deploy to production.  
 
