@@ -1,16 +1,15 @@
 # TEConnect Google Pay
-This document demonstrates the available options, using Google Pay via TEConnect.  TEConnect currently offers a Manual Entry form, Apple Pay and Google Pay.  Your app may use one - or all of these platforms to collect a payment token.  The section below explains how opt-in works with TEConnect, for each available platform. The remainder of the document focuses on Google Pay with TEConnect.
+This document demonstrates the available options, using Google Pay via TEConnect.  TEConnect currently offers a Manual Entry form, 3DS Manual Entry, Apple Pay and Google Pay.  Your app may use one - or all of these platforms to collect a payment token.  The section below explains how opt-in works with TEConnect for Google Pay specifically.
 
 # Payment Request Opt-In
 ```createTEConnect``` accepts a public key as the first argument. This public key is for [TEConnect Manual Entry](README.md#Getting-Started).
 The second argument is the [TEConnect options](README.md#TEConnect-Options) object.  
-Providing an ```appleMerchantId``` or a ```googleMerchantId``` to the ```tecPaymentRequest``` object is how to opt-in for each Payment Request Platform.  So providing an ```appleMerchantId``` is an opt-in for Apple Pay - and a ```googleMerchantId``` for Google Pay.  Example below.
+Providing an ```appleMerchantId``` or a ```googleMerchantId``` to the ```tecPaymentRequest``` object is how to opt-in for each Payment Request Platform.  So providing a `googleMerchantId` for Google Pay.  Example below.
 
 ```javascript
 const TE_CONNECT: TEConnect = createTEConnect("__publicKeyGoesHere__", {
     tecPaymentRequest: {
-        appleMerchantId: "__tecAppleMerchantId__"
-        googleMerchantId: "__googleMerchantId__",
+        googleMerchantId: "__googleMerchantId__"
     }
 });
 ```
@@ -30,12 +29,14 @@ const paymentRequestObject = {
 
 ## Important Google Pay Notes
 The Google Pay workflow differs from Apple Pay in a few ways.  
-   
-The [```confirm-token``` Event](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md#confirm-token-Event) is only mandatory if you do not provide the optional ```callbackIntents``` in your [payment request object](#Google-Pay-Payment-Request-Object).  If you do choose to leverage an ```onPaymentAuthorized``` callback - the token will be presented in that callback function, prior to the [```confirm-token``` Event](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md#confirm-token-Event).  By registering an ```onPaymentAuthorized``` callback - the Google Pay form will wait for a positive or negative response from your application before closing (waiting for your application's processing response). This callback is optional - and the default behavior is the form closes upon token generation ([```confirm-token``` Event](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md#confirm-token-Event)).  The [minimally viable code example](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md#Example-Implementation) uses the [```confirm-token``` Event](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md#confirm-token-Event), while the [more complex implementation](#Google-Pay-Example-Implementation) uses the ```onPaymentAuthorized``` callback to capture the token.
-  
-Apple Pay Id (```appleMerchantId```) is the only required ID to complete the Apple Pay workflow.  Google Pay, on the other hand, requires three points of identification:  ```merchantId```, ```merchantName```, and ```gatewayId```. The ```merchantId``` and ```merchantName``` will be negotiated directly between you and Google.  [Google's documentation on MerchantInfo and their Wallet Console](https://developers.google.com/pay/api/web/reference/request-objects#MerchantInfo) is very detailed - just remember that the ```merchantId``` is fed to the ```createTEConnect``` function, while the other points of information are provided in the [payment request object](#Google-Pay-Payment-Request-Object).  The ```gatewayId``` is provided by Magensa™ after a successful account creation.  
 
-Apple Pay uses an event driven workflow ([Apple Pay Listeners](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Apple-Pay-Listeners)), while Google uses optional callbacks.  This means that for Apple Pay - you will be leveraging TEConnect's [```listenFor``` method](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md#Payment-Request-Event-Handlers), wheras for Google - any optional callback or options will be provided directly in the [payment request object](#Google-Pay-Payment-Request-Object).  This can help differentiate which platform the end-user is using - as MPPG will have different operations to process the tokens created (Manual Entry, Apple Pay, or Google Pay).  
+The [`confirm-token` Event](./TecPaymentRequestREADME.md#confirm-token-Event) is only mandatory if you do not provide the optional `callbackIntents` in your [payment request object](#Google-Pay-Payment-Request-Object).  If you do choose to leverage an `onPaymentAuthorized` callback - the token will be presented in that callback function, prior to the [`confirm-token` Event](./TecPaymentRequestREADME.md#confirm-token-Event).  
+  
+By registering an `onPaymentAuthorized` callback - the Google Pay form will wait for a positive or negative response from your application before closing (waiting for your application's processing response). This callback is optional - and the default behavior is the form closes upon token generation ([`confirm-token` Event](./TecPaymentRequestREADME.md#confirm-token-Event)).  The [standard implementation code example](./TecPaymentRequestREADME.md#Example-Implementation) uses the [`confirm-token` Event](./TecPaymentRequestREADME.md#confirm-token-Event), while the [more complex implementation](#Google-Pay-Example-Implementation) uses the `onPaymentAuthorized` callback to capture the token.
+
+Any optional callback or options will be provided directly in the [payment request object](#Google-Pay-Payment-Request-Object).
+  
+Google Pay requires three points of identification:  `merchantId`, `merchantName`, and `gatewayId`. The `merchantId` and `merchantName` will be negotiated directly between you and Google.  [Google's documentation on MerchantInfo and their Wallet Console](https://developers.google.com/pay/api/web/reference/request-objects#MerchantInfo) is very detailed - just remember that the `merchantId` is fed to the `createTEConnect` function, while the other points of information are provided in the [payment request object](#Google-Pay-Payment-Request-Object).  The `gatewayId` is provided by Magensa™ after a successful account creation.  
 
 <br/>
 
@@ -61,15 +62,21 @@ For more information on each property - please see [Google's Documentation](http
 | transactionInfo | [```TransactionInfo```](https://developers.google.com/pay/api/web/reference/request-objects#TransactionInfo) | :heavy_check_mark: |  | [More details on all available properties here](https://developers.google.com/pay/api/web/reference/request-objects#TransactionInfo) |
 | callbackIntents | ```string[]``` | :x: | N/A | Declares intents for [paymentDataCallbacks](https://developers.google.com/pay/api/web/reference/request-objects#PaymentDataCallbacks) |
 | paymentDataCallbacks | ```object``` | :x: | N/A | [Callback functions](https://developers.google.com/pay/api/web/reference/request-objects#PaymentDataCallbacks) for dynamic price updates, and user-facing messages via Google Pay form |
-| offerInfo | [```OfferInfo```](https://developers.google.com/pay/api/web/reference/request-objects#OfferInfo) | :x: | N/A | [OfferInfo](https://developers.google.com/pay/api/web/reference/request-objects#OfferInfo) is displayed when the payment sheet loads. [Offer implementation example here](https://developers.google.com/pay/api/web/guides/tutorial#offers) |
+| offerInfo | [```OfferInfo```](https://developers.google.com/pay/api/web/reference/request-objects#OfferInfo) | :x: | N/A | [OfferInfo](https://developers.google.com/pay/api/web/reference/request-objects#OfferInfo) is displayed when the payment sheet loads |
 | emailRequired | ```boolean``` | :x: | N/A | set ```true``` to request an email address  |
 | shippingAddressRequired | ```boolean``` | :x: | N/A | set ```true``` to request a full shipping address  |
 | shippingOptionRequired | ```boolean``` | :x: | N/A | Set to true when the ```SHIPPING_OPTION``` callback intent is used. This field is required if you implement support for Authorize Payments or Dynamic Price Updates. [More info on ShippingOptionParameters](https://developers.google.com/pay/api/web/reference/request-objects#ShippingOptionParameters) |
 | shippingAddressParameters | ```object``` | :x: | N/A | If ```shippingAddressRequired``` is set to true, specify shipping address restrictions | 
-| shippingOptionParameters | [```ShippingOptionParameters[]```](https://developers.google.com/pay/api/web/reference/request-objects#ShippingOptionParameters) | :x: | N/A | Set default options. [More details on ```ShippingOptionParameters``` here](https://developers.google.com/pay/api/web/reference/request-objects#ShippingOptionParameters) | 
-| allowedPaymentMethods | [```PaymentMethod[]```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod) | :x: | N/A | TEConnect will build the default ["CARD" Payment Method](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod). This property allows for optionally adding more. Be aware that every [```PaymentMethod```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod) supplied will receive Magensa's [```tokenizationSpecification```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethodTokenizationSpecification). Overrides for [```tokenizationSpecification```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethodTokenizationSpecification) is not supported at this time. It is unlikely this property will be utilizied, but is available for future iterations. | 
-| environment | ```string``` | :x: | ```"TEST"``` | ```"TEST"``` or ```"PRODUCTION"```. [More details on PaymentOptions.environment here](https://developers.google.com/pay/api/web/reference/request-objects#PaymentOptions) |
-| prefetchPaymentData |  ```boolean``` | :x: | N/A | If set to ```true```, [```prefetchPaymentData```](https://developers.google.com/pay/api/web/reference/client#prefetchPaymentData) will be called upon button mount. [More info on ```prefetchPaymentData``` here](https://developers.google.com/pay/api/web/reference/client#prefetchPaymentData) |
+| shippingOptionParameters | [```ShippingOptionParameters```](https://developers.google.com/pay/api/web/reference/request-objects#ShippingOptionParameters) | :x: | N/A | Set default options. [More details on ```ShippingOptionParameters``` here](https://developers.google.com/pay/api/web/reference/request-objects#ShippingOptionParameters) | 
+| allowedPaymentMethods | [```PaymentMethod[]```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod) | :x: | N/A | TEConnect will build the default ["CARD" Payment Method](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod). This property allows for optionally adding more. Be aware that every [```PaymentMethod```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethod) supplied will receive Magensa's [```tokenizationSpecification```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethodTokenizationSpecification). Overrides for [```tokenizationSpecification```](https://developers.google.com/pay/api/web/reference/request-objects#PaymentMethodTokenizationSpecification) is not supported at this time. It is unlikely this property will be utilizied, but is available for future iterations.| 
+| environment | ```string``` | :x: | ```"TEST"``` | ```"TEST"``` or ```"PRODUCTION"```. [More details on `PaymentOptions.environment` here](https://developers.google.com/pay/api/web/reference/request-objects#PaymentOptions) |
+| existingPaymentMethodRequired | `boolean` | :x: | N/A | Setting this to `true` modifies the `CanMakePaymentsResult` [More details here](https://developers.google.com/pay/api/web/reference/request-objects#IsReadyToPayRequest) |
+| prefetchPaymentData |  ```boolean``` | :x: | N/A | If set to ```true```, [```prefetchPaymentData```](https://developers.google.com/pay/api/web/reference/client#prefetchPaymentData) will be called upon button mount. [More info on ```prefetchPaymentData``` here](https://developers.google.com/pay/api/web/reference/client#prefetchPaymentData) |  
+| allowPrepaidCards | `boolean` | :x: | true | [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
+| allowCreditCards | `boolean` | :x: | true | [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
+| assuranceDetailsRequired | `boolean` | :x: | N/A | Set to `true` to request `assuranceDetails` [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
+| billingAddressRequired | `boolean` | :x: | false | Set to `true` if you require a billing address [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
+| billingAddressParameters | `object` | :x: | N/A | The expected fields returned if billingAddressRequired is set to `true`. [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
 
 
 
@@ -93,6 +100,7 @@ Below is a table of available properties, and after that are examples.  Feed the
 | buttonType | ```string``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 | buttonLocale | ```string``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 | buttonSizeMode | ```string``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
+| buttonRadius | `number` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 | buttonRootNode | ```HTMLDocument or ShadowRoot``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 
 ```javascript
@@ -311,7 +319,7 @@ const googlePaymentRequestObject = {
 		totalPrice: "12.00",
 		totalPriceLabel: "Total"
   	},
-	callbackIntents: ["SHIPPING_ADDRESS",  "SHIPPING_OPTION", "PAYMENT_AUTHORIZATION"],
+	callbackIntents: ["SHIPPING_ADDRESS",  "SHIPPING_OPTION" , "PAYMENT_AUTHORIZATION"],
 	emailRequired: true,
 	shippingAddressRequired: true,
 	shippingOptionRequired: true,
@@ -324,7 +332,14 @@ const googlePaymentRequestObject = {
 		onPaymentAuthorized: onPaymentAuthorized,
 		onPaymentDataChanged: onPaymentDataChanged
 	},
-	environment: "TEST"
+	environment: "TEST",
+    allowCreditCards: true,
+    assuranceDetailsRequired: false,
+    billingAddressRequired: true,
+    billingAddressParameters: {
+        format: "FULL",
+        phoneNumberRequired: false
+    }
 };
 
 const customGoogleButtonOptions = {
