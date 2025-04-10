@@ -16,16 +16,17 @@ yarn add @magensa/te-connnect @magensa/te-connect-js
   
 or via CDN:
 ```html
-    <script src="https://cdn.magensa.net/te-connect/1.3.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.3.0/te-connect-js.js"></script>
+    <script src="https://cdn.magensa.net/te-connect/1.3.4/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.3.1/te-connect-js.js"></script>
 ```
 
 # Manual Card Entry
-This document will cover the card manual entry utility that TEConnect offers. 3DS Manual Entry is also available, if a valid 3DS API Key is supplied to [the `options` parameter](#TEConnect-Options).  
-TEConnect also offers a [Payment Request](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md) utility as well, with both Apple Pay and Google Pay supported. [Payment Request Documentation can be found here](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md)  
+This document will cover the card Manual Entry utility that TEConnect offers. 3DS Manual Entry is, optionally, available as well; if a valid 3DS API Key is supplied to [the `options` parameter](#TEConnect-Options). 
+
+TEConnect also offers a [Payment Request](./TecPaymentRequestREADME.md) utility, with both Apple Pay and Google Pay supported. [Payment Request Documentation can be found here](./TecPaymentRequestREADME.md)  
 Below we will begin with a step-by-step integration of the card manual entry utility.  
 If you would prefer to let the code speak, below we have [example implementations](#Example-Implementation). 
-One is using npmjs, [another](#Example-Implementation-CDN) uses our CDN, and the final uses [3DS Manual Entry](#TecThreeDs-Example).
+One is using npm.js modules, [another](#Example-Implementation-CDN) uses our CDN, and the final uses [3DS Manual Entry](#TecThreeDs-Example).
 
 ## Magensa™
 TEConnect Manual Entry, 3DS Manual Entry and [TEConnect Payment Request](https://github.com/Magensa/te-connect-js/blob/master/TecPaymentRequestREADME.md) components all require a valid [Magensa™](https://magensa.net/) account. If you need assistance creating or configuring an account, please reach out to the [Magensa Support Team](https://magensa.net/support.html).  
@@ -132,6 +133,11 @@ However, if you wish to omit the ```billingZip``` completely, you may do so by h
 import { createTEConnect } from '@magensa/te-connect';
 import { TeConnectJs } from '@magensa/te-connect-js';
 
+/*
+    You may optionally create the TEConnect instance in a larger scope - if needed to share the instance amongst several components.
+    var teInstance = createTEConnect("__your_public_key_here__", { hideZip: true });
+*/
+
 function demoInit() {
     var teInstance = createTEConnect("__your_public_key_here__", { hideZip: true });
     var teConnect = new TeConnectJs(teInstance);
@@ -187,9 +193,15 @@ type CreateTEConnectOptions = {
 
 <br />
 
-# TecThreeDs (3DS) Optional Feature
-TEConnect Manual Entry offers 3DS Manual Entry. To opt-in, add a `threeds` parameter to the [the ```options``` object](#TEConnect-Options) for the `createTEConnect` method.  
-Add a 3DS API key (`threedsApiKey`) to the `threeds` object, and (optionally) a `threedsEnvironment` string as well (defaults to `sandbox` for testing, when not specified). Only flip your project to `production` when you have tested with `sandbox`, and are ready to deploy to production.  
+# TecThreeDs (3DS) Manual Card Entry
+TEConnect offers, the optional, 3DS Manual Entry. To opt-in:
+1. Add a `threeds` parameter to the [the ```options``` object](#TEConnect-Options) for the `createTEConnect` method.  
+2. Add a 3DS API key (`threedsApiKey`) to the `threeds` object, and (optionally) a `threedsEnvironment` string as well (defaults to `sandbox` for testing, when not specified). 
+    - Only flip your project to `production` when you have tested with `sandbox`, and are ready to deploy to production.  
+3. Use the `mountThreeDsCardEntry` method, in the same manner you would `mountCardEntry`.
+    - Only one Manual Entry form may be present on the DOM at a given time.
+    - If your use-case utilizes both Manual Entry and 3DS Manual Entry - ensure there's a condition in place that will only mount one or the other to the DOM. 
+    - If you need to switch between the two forms, without a page refresh, ensure a mounted form is removed before mounting another.
 
 [3DS `sandbox` Test Cards can be found here](https://docs.3dsintegrator.com/docs/test-cards#emv-3ds-test-cards).
 
@@ -203,18 +215,74 @@ Add a 3DS API key (`threedsApiKey`) to the `threeds` object, and (optionally) a 
     });
 ```  
 
-3DS workflow is used in a similar manner as manual entry. The only difference: A required [`threeDsConfigObject`](#ThreeDsConfigObject) must be fed to the `configureThreeds` method.  For a minimally viable 3DS solution, that is the only additional requirement needed complete the manual entry workflow. However, there are more optional methods that can be leveraged to communicate with your 3DS instance.  
+3DS workflow is used in a similar manner as manual entry. There are a few additional requirements:  
+ - A required [`threeDsConfigObject`](#ThreeDsConfigObject) must be fed to the `configureThreeds` method.  
+ - use `mountThreeDsCardEntry` instead of `mountCardEntry`. 
+ - ensure there is a `"challengeNode"` present on the DOM with a valid `id`
 
-See the [TecThreeDs Example](#TecThreeDsExample) for an example implementation.
+ ```index.html```
+```html
+<body>
+    <div id="example-challenge-node"></div>
+    <div id="example-div"></div>
+    <button type="button" id="pay-button">Create Payment</button>
+    <script src='main.bundle.js'></script>
+</body>
+```  
+
+```main.js```
+```javascript
+import { createTEConnect } from '@magensa/te-connect';
+import { TeConnectJs } from '@magensa/te-connect-js';
+
+const exampleThreedsConfig = {
+  amount: 110,
+  challengeNodeId: "example-challenge-node"
+};
+
+const teInstance = createTEConnect("__publicKeyGoesHere__", { 
+    threeds: {
+        threedsApiKey: "__3dsApiKeyGoesHere__",,
+        threedsEnvironment: "sandbox"
+    }
+});
+
+function demoInit() {
+    const teConnect = new TeConnectJs(teInstance);
+    teConnect.configureThreeds(exampleThreedsConfig);
+    teConnect.mountThreeDsCardEntry('example-div');
+
+    function createPaymentClick() {
+        return teConnect.createPayment()
+            .then(resp => {
+                if (resp.error) {
+                    //Not successful - see error
+                }
+                else {
+                    //Successful - see response
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    document.getElementById('pay-button').addEventListener('click', createPaymentClick);
+}
+
+demoInit();
+``` 
+ 
+ For a minimally viable 3DS solution, those are the additional requirements needed complete the 3DS manual entry workflow. However, there are more optional methods that can be leveraged to communicate with your 3DS instance.  
+
+See the [TecThreeDs Example](#TecThreeDs-Example) for an example implementation.
 
 ### `threeDsInterface`
 | Method Name  | Parameters | Notes |
 |:--:|:--:|:--:|
-| configureThreeds | `ThreeDsConfigObject` | This is the only method required to begin a 3DS Manual Entry instance. More info on required properties and options [can be found here](#ThreeDsConfigObject) |
-| listenFor | eventType (as `string`),  listener (as `function`) | Currently, `"threeds-status"` is the only `eventType` available to listen for [3DS status updates](#ThreeDs-Status-Listeners) |
+| configureThreeds | [`ThreeDsConfigObject`](#ThreeDsConfigObject) | This is the only method required to begin a 3DS Manual Entry instance. More info on required properties and options [can be found here](#ThreeDsConfigObject) |
+| listenFor | `eventType` (as `string`),  `listener` (as `function`) | Currently, `"threeds-status"` is the only `eventType` available to listen for [3DS status updates](#ThreeDs-Status-Listeners) |
 | updateThreedsConfig | `ThreeDsConfigObject` | Full update (complete object). Updates are only available prior to 3DS auth. Once cardholder has entered card info, object is not able to be updated |
 
-See the [TecThreeDs Example](#TecThreeDsExample) for example uses for these methods.
+See the [TecThreeDs Example](#TecThreeDs-Example) for example uses for these methods.
 
 ## `ThreeDsConfigObject`
 TEConnect forwards the `threeDsConfigObject` to 3DS API call 'authenticate browser'. This method begins the 3DS process; TEConnect handles the interactions on your application's behalf while the cardholder is entering the card info. TEConnect only requires two properties to get started: 
@@ -501,14 +569,14 @@ Alternatively - if your project requires a specific version - you may target tha
 ```index.html```
 ```html
 <body>
-    <h1>TEConnectJS Example</h1>
+    <script src="https://cdn.magensa.net/te-connect/1.3.4/te-connect.js"></script>
+    <script src="https://cdn.magensa.net/te-connect-js/1.3.1/te-connect-js.js"></script>
+
+    <h1>TEConnectJS CDN Example</h1>
 
     <div id="example-div"></div>
     <button type="button" id="pay-button">Create Payment</button>
     <button type="button" id="change-styles">Change Styles</button>
-
-    <script src="https://cdn.magensa.net/te-connect/1.3.2/te-connect.js"></script>
-    <script src="https://cdn.magensa.net/te-connect-js/1.3.0/te-connect-js.js"></script>
 
     <script>
         function demoInit() {
@@ -635,15 +703,15 @@ const exampleStyles = {
     }
 };
 
+const teInstance = createTEConnect("__your_public_key_here__", { 
+    threeds: {
+        threedsApiKey: "__3dsApiKeyGoesHere__",
+        threedsEnvironment: "sandbox"
+    }
+});
+
 
 function demoInit() {
-    var teInstance = createTEConnect("__your_public_key_here__", { 
-        threeds: {
-            threedsApiKey: "__3dsApiKeyGoesHere__",
-            threedsEnvironment: "sandbox"
-        }
-    });
-    
     var teConnect = new TeConnectJs(teInstance);
 
     teConnect.configureThreeds(exampleThreedsConfig);
@@ -652,7 +720,7 @@ function demoInit() {
         console.log('[3DS Status Listener]:', threedsStatus);
     }
 
-    teConnect.mountCardEntry('example-div', exampleStyles);
+    teConnect.mountThreeDsCardEntry('example-div', exampleStyles);
 
     function createPaymentClick() {
         return teConnect.createPayment()
