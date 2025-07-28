@@ -10,7 +10,6 @@ Providing an ```appleMerchantId``` or a ```googleMerchantId``` to the ```tecPaym
 const TE_CONNECT = createTEConnect("__publicKeyGoesHere__", {
     tecPaymentRequest: {
         appleMerchantId: "__tecAppleMerchantId__"
-        googleMerchantId: "__googleMerchantId__",
     }
 });
 ```
