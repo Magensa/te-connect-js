@@ -1,17 +1,33 @@
 # TEConnect Payment Request JS
 [![npm version](https://img.shields.io/npm/v/@magensa/te-connect-js.svg?style=for-the-badge)](https://www.npmjs.com/package/@magensa/te-connect-js "@magensa/te-connect-js npm.js")  
-JavaScript module for use with Apple Pay via Token Exchange Connect
+JavaScript module for use with Apple Pay and Google Pay via Token Exchange Connect
+
+> Use this document for a minimal dual-platform (Apple + Google) integration.
+> For platform-specific features — shipping callbacks, button customization,
+> error handling — see [TecApplePayREADME.md](./TecApplePayREADME.md) and
+> [TecGooglePayREADME.md](./TecGooglePayREADME.md).
+
+## Contents
+- [Payment Request Platforms](#payment-request-platforms)
+- [Getting Started](#getting-started)
+- [Step-by-step](#step-by-step)
+- [Payment Request Object](#payment-request-object)
+- [Token Exchange Connect Payment Request Interface](#token-exchange-connect-payment-request-interface)
+- [Payment Request Event Handlers](#payment-request-event-handlers)
+- [Payment Request Button Options](#payment-request-button-options)
+- [Example Implementation](#example-implementation)
+- [Payment Request Error Handling](#payment-request-error-handling)
 
 # Payment Request Platforms
 TEConnect currently offers two payment request platforms to create payment tokens: [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md).  The payment tokens are processed via [Magensa's Payment Protection Gateway](https://svc1.magensa.net/MPPGv4/MPPGv4Service.svc) (MPPG). To that end - there are many configurable options exposed when using [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) via TEConnect.  This document will focus on a very simple implementation using both platforms. If you are interested in a more customized experience for your users, using [Apple Pay](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and/or [Google Pay](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) - check out the [TecApplePayREADME.md](https://github.com/Magensa/te-connect-js/blob/master/TecApplePayREADME.md), and/or [TecGooglePayREADME](https://github.com/Magensa/te-connect-js/blob/master/TecGooglePayREADME.md) which will cover more specific configuration for each - as well as links to Apple/Google's documentation, respectively.
 
 # Getting Started
-```
+```bash
 npm install @magensa/te-connect @magensa/te-connect-js
 ```
 or
-```
-yarn add @magensa/te-connnect @magensa/te-connect-js
+```bash
+yarn add @magensa/te-connect @magensa/te-connect-js
 ```
 or via CDN:
 ```html
@@ -228,7 +244,9 @@ const teConnectPaymentRequestObject = {
 The Token Exchange Connect Payment Request Interface (referred to as the ```tecPrInterface```) is the interface needed to interact, and respond to user's interactions on the Payment Request Form.
 
 ## Create Payment Request Interface
-The ```createTecPaymentRequest``` function is property of the ```TeConnectJs``` class, after it's been instanted. Feed this function a [payment request object](#Payment-Request-Object) and it returns the ```tecPrInterface```.
+The `createTecPaymentRequest` function is a property of the `TeConnectJs` class, after it has been instantiated. Feed this function a [payment request object](#Payment-Request-Object) and it returns the `tecPrInterface`.
+
+> `createTecPaymentRequest` returns an interface object. This document refers to that object as `tecPrInterface` throughout — you can name it anything in your application.
 
 ## Interface Methods
 ### ```canMakePayments```
@@ -271,8 +289,32 @@ type CanMakePaymentsResult = {
 ```
 
 ### ```updatePaymentRequest```
-This function is only useful _before_ the user has hit the Apple Pay button.  If you have [created a payment request interface](#Create-Payment-Request-Interface), using a [payment request object](#Payment-Request-Object) - but wish to update that object before the user hits the button and renders the payment request form - you may call this function to do so.  Be aware that this function is a __full update__, so the object will completely replace the previous payment request object supplied.
-- It's not necessary to update your object inside of [payment request listeners](#Payment-Request-Event-Handlers). Any response in your completion functions will update the form dynamically.
+This function is only useful _before_ the user has hit the payment button. If you have [created a payment request interface](#Create-Payment-Request-Interface) using a [payment request object](#Payment-Request-Object) but wish to update that object before the user opens the payment form, call this function. Be aware that this function is a **full update** — the new object completely replaces the previous one.
+
+- It is not necessary to call `updatePaymentRequest` inside [payment request listeners](#Payment-Request-Event-Handlers). Response objects passed to listener completion functions update the form dynamically.
+
+```javascript
+// Example: update the transaction total before the user taps the button
+tecPrInterface.updatePaymentRequest({
+    applePay: {
+        ...existingApplePayRequestObject,
+        total: {
+            label: "Updated Total",
+            amount: "2.50",
+            type: "final"
+        }
+    },
+    googlePay: {
+        ...existingGooglePayRequestObject,
+        transactionInfo: {
+            totalPriceStatus: "FINAL",
+            totalPrice: "2.50",
+            currencyCode: "USD",
+            countryCode: "US"
+        }
+    }
+});
+```
 
 
 ### ```listenFor```

@@ -3,15 +3,29 @@
 
 JavaScript module used to interact with TEConnect.  
 
+## Contents
+- [Getting Started](#getting-started)
+- [Documentation Map](#documentation-map)
+- [Prerequisites](#prerequisites)
+- [Manual Card Entry](#manual-card-entry)
+- [Step-by-step](#step-by-step)
+- [TEConnect Options](#teconnect-options)
+- [TecThreeDs (3DS)](#tecthreedss-3ds-manual-card-entry)
+- [Styles API](#styles-api)
+- [createPayment Return Objects](#createpayment-return-objects)
+- [Example Implementation](#example-implementation)
+- [Example Implementation CDN](#example-implementation-cdn)
+- [TecThreeDs Example](#tecthreedss-example)
+
 # Getting Started
 Via [npmjs](https://www.npmjs.com/package/@magensa/te-connect-js):  
 
-```
+```bash
 npm install @magensa/te-connect @magensa/te-connect-js
 ```
 or
-```
-yarn add @magensa/te-connnect @magensa/te-connect-js
+```bash
+yarn add @magensa/te-connect @magensa/te-connect-js
 ```  
   
 or via CDN:
@@ -19,6 +33,30 @@ or via CDN:
     <script src="https://cdn.magensa.net/te-connect/1.3.4/te-connect.js"></script>
     <script src="https://cdn.magensa.net/te-connect-js/1.3.1/te-connect-js.js"></script>
 ```
+
+## Documentation Map
+
+| You want to... | Go to |
+|---|---|
+| Collect card data with a hosted input form | This file — [Manual Card Entry](#manual-card-entry) |
+| Add 3DS authentication to card entry | This file — [TecThreeDs](#tecthreedss-3ds-manual-card-entry) |
+| Add Apple Pay and/or Google Pay buttons | [TecPaymentRequestREADME.md](./TecPaymentRequestREADME.md) |
+| Deep-configure Apple Pay (listeners, shipping, errors) | [TecApplePayREADME.md](./TecApplePayREADME.md) |
+| Deep-configure Google Pay (callbacks, offers, billing) | [TecGooglePayREADME.md](./TecGooglePayREADME.md) |
+
+## Prerequisites
+
+All TEConnect integrations require a valid [Magensa™](https://magensa.net/) account. Contact the [Magensa Support Team](https://magensa.net/support.html) if you need help creating or configuring an account.
+
+| Integration | What you need |
+|---|---|
+| Manual Card Entry (all integrations) | Magensa™ account + public key |
+| Apple Pay | `appleMerchantId` — granted after Magensa™ Apple Pay onboarding |
+| Google Pay | `googleMerchantId` — obtained from [Google Pay & Wallet Console](https://pay.google.com/business/console) |
+| Google Pay | `gatewayId` — provided by Magensa™ after account creation |
+| Apple Pay, Google Pay | HTTPS domain required in production |
+
+> Apple Pay and Google Pay payment buttons will not render over `http://`. Use a tunneling service (e.g., ngrok) or a local certificate authority (e.g., mkcert) for local development.
 
 # Manual Card Entry
 This document will cover the card Manual Entry utility that TEConnect offers. 3DS Manual Entry is, optionally, available as well; if a valid 3DS API Key is supplied to [the `options` parameter](#TEConnect-Options). 
@@ -116,8 +154,7 @@ demoInit();
 
 4. There are two ways to inject your own styles into the Card Entry fields. One method is static (define styles when mounting), while the other is dynamic (utilize the ```setStyles``` method). The [example implementation](#Example-Implementation) uses both of these methods to demonstrate various ways you can control your custom styles. See the [complete styles API](#Styles-API) for more details.  
 
-5. Optionally, you may hide the ZIP input box, as demonstrated below. Once the input is hidden, the ```billingZip``` parameter becomes optional. If you still wish to provide a ```billingZip``` without rendering the input - you may do so, as demonstrated below (this would hide the ZIP input field, but would still create a payment token with the ```billingZip``` provided in the call).   
-However, if you wish to omit the ```billingZip``` completely, you may do so by hiding the zip input and passing no parameters to the ```createPayment``` function.
+5. By default, a ZIP Code input field is shown and `billingZip` is required. You can hide the ZIP input by passing `{ hideZip: true }` to `createTEConnect`. Once hidden, `billingZip` becomes optional: you may still pass a zip string directly to `createPayment`, or omit it entirely by passing no arguments.
 
 ```index.html```
 ```html
@@ -242,7 +279,7 @@ const exampleThreedsConfig = {
 
 const teInstance = createTEConnect("__publicKeyGoesHere__", { 
     threeds: {
-        threedsApiKey: "__3dsApiKeyGoesHere__",,
+        threedsApiKey: "__3dsApiKeyGoesHere__",
         threedsEnvironment: "sandbox"
     }
 });
@@ -718,7 +755,7 @@ function demoInit() {
 
     teConnect.listenFor("threeds-status", function(threedsStatus) {
         console.log('[3DS Status Listener]:', threedsStatus);
-    }
+    });
 
     teConnect.mountThreeDsCardEntry('example-div', exampleStyles);
 

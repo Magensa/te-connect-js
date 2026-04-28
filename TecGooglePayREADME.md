@@ -1,6 +1,13 @@
 # TEConnect Google Pay
 This document demonstrates the available options, using Google Pay via TEConnect.  TEConnect currently offers a Manual Entry form, 3DS Manual Entry, Apple Pay and Google Pay.  Your app may use one - or all of these platforms to collect a payment token.  The section below explains how opt-in works with TEConnect for Google Pay specifically.
 
+## Contents
+- [Payment Request Opt-In](#payment-request-opt-in)
+- [Google Pay Payment Request Object](#google-pay-payment-request-object)
+- [Google Pay Button Options](#google-pay-button-options)
+- [Google Pay Example Implementation](#google-pay-example-implementation)
+- [Google Pay Error Handling](#google-pay-error-handling)
+
 # Payment Request Opt-In
 ```createTEConnect``` accepts a public key as the first argument. This public key is for [TEConnect Manual Entry](README.md#Getting-Started).
 The second argument is the [TEConnect options](README.md#TEConnect-Options) object.  
@@ -58,7 +65,7 @@ For more information on each property - please see [Google's Documentation](http
 | allowedAuthMethods | ```string[]``` | :x: | ```["PAN_ONLY", "CRYPTOGRAM_3DS"]``` | [More details on ```allowedAuthMethods``` here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
 | allowedCardNetworks | ```string[]``` | :heavy_check_mark: | N/A  | [More details on ```allowedCardNetworks``` here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
 | merchantName | ```string``` | :heavy_check_mark: | N/A | ```merchantId``` is provided to the ```createTeConnect``` call. ```merchantName``` is provided in the payment request object. [More info here](https://developers.google.com/pay/api/web/reference/request-objects#MerchantInfo) |
-| gatewayId | ```string``` | :heavy_check_mark: | N/A  | Given by Magensa™ after a successful account creation |
+| gatewayId | ```string``` | :heavy_check_mark: | N/A  | Provided by Magensa™ on account creation. Supplied here in the payment request object. Note: `googleMerchantId` (a separate identifier from Google) is provided to `createTEConnect`, not here — see [TEConnect Options](README.md#TEConnect-Options). |
 | transactionInfo | [```TransactionInfo```](https://developers.google.com/pay/api/web/reference/request-objects#TransactionInfo) | :heavy_check_mark: |  | [More details on all available properties here](https://developers.google.com/pay/api/web/reference/request-objects#TransactionInfo) |
 | callbackIntents | ```string[]``` | :x: | N/A | Declares intents for [paymentDataCallbacks](https://developers.google.com/pay/api/web/reference/request-objects#PaymentDataCallbacks) |
 | paymentDataCallbacks | ```object``` | :x: | N/A | [Callback functions](https://developers.google.com/pay/api/web/reference/request-objects#PaymentDataCallbacks) for dynamic price updates, and user-facing messages via Google Pay form |
@@ -78,7 +85,13 @@ For more information on each property - please see [Google's Documentation](http
 | billingAddressRequired | `boolean` | :x: | false | Set to `true` if you require a billing address [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
 | billingAddressParameters | `object` | :x: | N/A | The expected fields returned if billingAddressRequired is set to `true`. [More details here](https://developers.google.com/pay/api/web/reference/request-objects#CardParameters) |
 
-
+> **Before deploying to production:**
+> 1. Set `environment: "PRODUCTION"` in your payment request object (default is `"TEST"`).
+> 2. Replace `"__magensa_gateway_id__"` with your live `gatewayId` from Magensa™.
+> 3. Replace `"__googleMerchantId__"` with your verified merchant ID from [Google Pay & Wallet Console](https://pay.google.com/business/console).
+> 4. Ensure your site is served over `https://`.
+>
+> Test tokens generated in `"TEST"` mode cannot be processed by MPPG in production.
 
 # Google Pay Button Options
 Google Pay offers many button options to tailor the Google Pay Button to the applications theme. [Here are Google's Brand Guidelines](https://developers.google.com/pay/api/web/guides/brand-guidelines) that explain how the button may be styled appropriately.
@@ -101,7 +114,7 @@ Below is a table of available properties, and after that are examples.  Feed the
 | buttonLocale | ```string``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 | buttonSizeMode | ```string``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
 | buttonRadius | `number` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
-| buttonRootNode | ```HTMLDocument or ShadowRoot``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions) |
+| buttonRootNode | ```HTMLDocument or ShadowRoot``` | See Google's [ButtonOptions](https://developers.google.com/pay/api/web/reference/request-objects#ButtonOptions). Only needed when rendering the button inside a Shadow DOM (e.g., a Web Component). In standard DOM contexts, omit this property. |
 
 ```javascript
 const exampleGoogleButtonOptions = {
@@ -125,7 +138,7 @@ function demoInit() {
         tecPaymentRequest: { googleMerchantId: "__tecGoogleMerchantId__" } 
     });
 
-    var teConnect = new TeConnectJs(teInstance);
+    var teConnect = new TeConnectJs(teConnectInstance);
 
     var tecPrInterface = teConnect.createTecPaymentRequest(googlePaymentRequestObject);
 
@@ -363,7 +376,7 @@ function demoInit() {
         tecPaymentRequest: { googleMerchantId: "__tecGoogleMerchantId__" } 
     });
 
-    var teConnect = new TeConnectJs(teInstance);
+    var teConnect = new TeConnectJs(teConnectInstance);
 
     var tecPrInterface = teConnect.createTecPaymentRequest(googlePaymentRequestObject);
 
@@ -373,7 +386,10 @@ function demoInit() {
     });
 
     /*
-    Note that because we have registered an `onPaymentAuthorized` callback in the payment request object, the listener below becomes optional for Google Pay:
+    Because onPaymentAuthorized is registered in paymentDataCallbacks above, the token is
+    delivered to that callback before the 'confirm-token' event fires. In this pattern,
+    listening for 'confirm-token' is optional for Google Pay.
+    For a simpler integration without paymentDataCallbacks, see TecPaymentRequestREADME.md.
 
     tecPrInterface.listenFor('confirm-token', tokenResp => {
         const { tokenDetails, completePayment, error } = tokenResp;
