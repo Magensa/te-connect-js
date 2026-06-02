@@ -1,6 +1,15 @@
 # TEConnect Apple Pay
 This document demonstrates the available options, using Apple Pay via TEConnect.  TEConnect currently offers a Manual Entry form, Apple Pay and Google Pay.  Your app may use one - or all of these platforms to collect a payment token.  The section below explains how opt-in works with TEConnect, for each available platform. The remainder of the document focuses on Apple Pay with TEConnect.
 
+## Contents
+- [Payment Request Opt-In](#payment-request-opt-in)
+- [Apple Pay Payment Request Object](#apple-pay-payment-request-object)
+- [Apple Pay Listeners](#apple-pay-listeners)
+- [Apple Pay Button Options](#apple-pay-button-options)
+- [Apple Pay Example Implementation](#apple-pay-example-implementation)
+- [Apple Pay Error Handling](#apple-pay-error-handling)
+- [Apple Pay User Requirements](#apple-pay-user-requirements)
+
 # Payment Request Opt-In
 ```createTEConnect``` accepts a public key as the first argument. This public key is for [TEConnect Manual Entry](https://github.com/Magensa/te-connect-js#Getting-Started).
 The second argument is the [TEConnect options](https://github.com/Magensa/te-connect-js#TEConnect-Options) object.  
@@ -9,7 +18,7 @@ Providing an ```appleMerchantId``` or a ```googleMerchantId``` to the ```tecPaym
 ```javascript
 const TE_CONNECT = createTEConnect("__publicKeyGoesHere__", {
     tecPaymentRequest: {
-        appleMerchantId: "__tecAppleMerchantId__"
+        appleMerchantId: "__tecAppleMerchantId__",
         googleMerchantId: "__googleMerchantId__",
     }
 });
@@ -29,15 +38,20 @@ const paymentRequestObject = {
 ```
 
 # Apple Pay Payment Request Object
+
+> **Local Development Note:** Apple Pay requires an `https://` domain. The Apple Pay button will not render on `http://localhost`. Use a tunneling service (e.g., ngrok) or a local certificate authority (e.g., mkcert) during development.
+
 This section will specifically address the [ApplePayPaymentRequest object](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentrequest).
 - [Here is Apple's Documentation about the payment request object](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentrequest)
 - It is encouraged to read through Apple's documentation for all the options available to you to define your form.
 - Be aware that any inaccuracy in the payment request object will most likely throw a ```TypeError``` without a message. Any errors that come from Apple's javascript rarely have any messages attached to errors.
+- The `applePayVersion` property defaults to `3`. Only change this if you need to opt in to features that require a higher version number — see [Apple's version compatibility table](https://developer.apple.com/documentation/apple_pay_on_the_web/apple_pay_on_the_web_version_history) for details.
+
 Below is an example of a Payment Request object.  This is where your form is defined - so each customer's object will appear differently, depending on the customer's circumstances.
 ```javascript
 const examplePaymentRequestObject = {
-    storeDisplayName: "TEConnect Example Store",
-    applePayVersion: 3, //Default is 3, unless specified
+    storeDisplayName: "TEConnect Example Store", // optional — display name shown in the Apple Pay sheet
+    applePayVersion: 3, // optional — defaults to 3; only change if you need a higher-version feature
     currencyCode: "USD",
     countryCode: "US",
     supportedNetworks: ['visa', 'masterCard', 'amex', 'discover', 'jcb'],
@@ -115,7 +129,7 @@ When listening to the ```confirm-token``` event - there will be two special prop
 - ```completePayment```
     - Call this function within 30 seconds of receiving it - otherwise a timeout error will occur and close the Apple Pay form.
     - There are two possible value types to call this function with - either a string value, or an object:
-        - This function expects either ```"sucess"``` or ```"failure"``` as string options - and will display the chosen completion status on the form.
+        - This function expects either ```"success"``` or ```"failure"``` as string options - and will display the chosen completion status on the form.
         - Optionally, if you've confirmed the user is a [qualified Apple Pay user](#Apple-Pay-User-Requirements) (```canMakePayments``` result has returned ```{ applePay: true }```) you can provide an [Apple Pay Authorization Result](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentauthorizationresult) for more descriptive error messages.
             - In this case - there will be a ```status``` and an ```errors``` property. The status must be provided in a recognized format ([as demonstrated in the Apple docs](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaypaymentauthorizationresult)).
                 - Since this is an error scenario it's likely that the value needed would be: ```ApplePaySession.STATUS_FAILURE```.
@@ -219,11 +233,18 @@ There are many options and styles available to assist with tailoring the Apple P
     - ```"te-connect-apple-pay-btn"```
     - When applying custom CSS - please be sure to adhere to [Apple's Guidelines](https://developer.apple.com/design/human-interface-guidelines/apple-pay/overview/buttons-and-marks)
 
-| Property Name | Type | Possible Values |
-|:--:|:--:|:--:|
-| ```buttonLanguage``` | ```string``` | [available button languages](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonlocale) | 
-```buttonType``` | ```string``` | [available button types](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttontype) |
-| ```buttonStyles``` | ```string``` | ```'black'``` ```'white'``` ```'white-outline'``` [available button styles](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonstyle)  |
+| Property Name | Type | Default Value | Possible Values |
+|:--:|:--:|:--:|:--:|
+| `buttonLanguage` | `string` | `'en'` | [available button languages](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonlocale) — not validated, applied directly |
+| `buttonType` | `string` | `'plain'` | [available button types](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttontype) — not validated, applied directly |
+| `buttonStyle` | `string` | `'black'` | `'black'` `'white'` `'white-outline'` — validated; unrecognized values fall back to `'black'`. See [available button styles](https://developer.apple.com/documentation/apple_pay_on_the_web/applepaybuttonstyle) |
+| `buttonWidth` | `string` | `'100%'` | Any valid CSS width value (e.g., `'200px'`, `'50%'`) |
+| `buttonHeight` | `string` | `'30px'` | Any valid CSS height value (e.g., `'40px'`, `'3rem'`) |
+| `buttonPadding` | `string` | `'0px'` | Any valid CSS padding value (e.g., `'10px'`, `'5px 10px'`) |
+| `buttonBorderRadius` | `string` | `'4px'` | Any valid CSS border-radius value (e.g., `'8px'`, `'50%'`) |
+| `buttonBoxSizing` | `string` | `'border-box'` | `'border-box'` or `'content-box'` |
+
+> **Note:** `buttonLanguage` and `buttonType` are not validated — typos will be silently applied. `buttonStyle` is validated and will default to `'black'` if an unrecognized value is supplied.
 
 <br />
 
